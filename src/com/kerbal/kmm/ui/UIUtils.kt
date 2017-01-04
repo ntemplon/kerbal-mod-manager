@@ -1,5 +1,6 @@
 package com.kerbal.kmm.ui
 
+import javafx.geometry.Insets
 import javafx.stage.Stage
 
 /**
@@ -20,3 +21,4 @@ import javafx.stage.Stage
  *
  */
 fun Stage.requestClose() = this.fireEvent(javafx.stage.WindowEvent(this, javafx.stage.WindowEvent.WINDOW_CLOSE_REQUEST))
+fun insets(top: Double = 0.0, right: Double = 0.0, bottom: Double = 0.0, left: Double = 0.0): Insets = Insets(top, right, bottom, left)

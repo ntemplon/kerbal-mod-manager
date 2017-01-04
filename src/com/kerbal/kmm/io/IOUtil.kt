@@ -27,13 +27,17 @@ import java.nio.file.Paths
  *
  */
 fun Path.exists(): Boolean = Files.exists(this)
+
 fun Path.doesNotExist(): Boolean = !this.exists()
 fun Path.isDirectory(): Boolean = Files.isDirectory(this)
 fun String.toPath(): Path = Paths.get(this)
 
 fun Path.mkdirs() = Files.createDirectories(this)
 fun Path.readAllLines(): List<String> = Files.readAllLines(this)
+fun Path.readAllText(): String = this.readAllLines().joinToString(separator = System.lineSeparator())
+fun Path.writeAllText(text: String): Path = Files.write(this, listOf(text))
+fun Path.writeAllLines(text: Iterable<String>): Path = Files.write(this, text)
 fun Path.inputStream(): InputStream = Files.newInputStream(this)
 fun Path.outputStream(): OutputStream = Files.newOutputStream(this)
 fun Path.directoryStream(): DirectoryStream<Path> = Files.newDirectoryStream(this)
-inline fun <reified T: Any> Path.readJson(): T = this.readAllLines().fromJson()
+inline fun <reified T : Any> Path.readJson(): T = this.readAllLines().fromJson()

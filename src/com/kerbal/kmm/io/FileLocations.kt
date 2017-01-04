@@ -30,7 +30,8 @@ object FileLocations {
     val archivesFolder: Path = baseFolder.resolve("archives")
     val modFolder: Path = baseFolder.resolve("mods")
 
-    val preferencesFile: Path = baseFolder.resolve("prefs.json")
+    val preferencesFile: Path = baseFolder.resolve("prefs.cfg")
+    val stateFile: Path = baseFolder.resolve("kmm.cfg")
 
     init {
         FileLocations::class.memberProperties.filter { prop ->

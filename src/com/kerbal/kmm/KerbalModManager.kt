@@ -1,9 +1,12 @@
 package com.kerbal.kmm
 
-import com.kerbal.kmm.io.FileLocations
-import com.kerbal.kmm.io.exists
+import com.kerbal.kmm.io.*
 import com.kerbal.kmm.ui.MainApp
 import javafx.application.Application
+import javafx.collections.ObservableList
+import tornadofx.observable
+import java.io.File
+import java.nio.file.Path
 
 /**
  * Copyright (c) 2016 Nathan Templon
@@ -22,6 +25,42 @@ import javafx.application.Application
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+object KerbalModManager {
+    var state: KmmState
+        get() = KmmState(
+                archiveNames = archives.map { FileLocations.baseFolder.relativize(it.path.toAbsolutePath()).toString() }
+        )
+        set(state) {
+            state.archiveNames
+                    .map(String::toPath)
+                    .map { FileLocations.baseFolder.resolve(it).toAbsolutePath() }
+                    .filter(Path::exists)
+                    .map(Path::toAbsolutePath)
+                    .map { path -> Archive.create(path) }
+                    .forEach { archive -> archives.add(archive) }
+        }
+
+    val archives: ObservableList<Archive> = mutableListOf<Archive>().observable()
+
+
+    fun readState() {
+        if (FileLocations.stateFile.exists()) {
+            state = Resources.gson.fromJson(FileLocations.stateFile.readAllText(), KmmState::class.java)
+        } else {
+            state = KmmState()
+        }
+    }
+
+    fun writeState() {
+        FileLocations.stateFile.writeAllText(Resources.gson.toJson(state))
+    }
+}
+
+data class KmmState(val archiveNames: List<String> = listOf())
+
+
 fun main(args: Array<String>) {
+    KerbalModManager.readState()
     Application.launch(MainApp::class.java, *args)
+    KerbalModManager.writeState()
 }

@@ -3,18 +3,26 @@ package com.kerbal.kmm.ui
 import com.kerbal.kmm.Settings
 import com.kerbal.kmm.io.*
 import com.kerbal.kmm.util.PlatformUtils
+import javafx.collections.ObservableList
 import javafx.event.EventTarget
 import javafx.geometry.Insets
+import javafx.scene.Cursor
+import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
+import javafx.scene.input.DragEvent
+import javafx.scene.input.MouseEvent
+import javafx.scene.input.TransferMode
 import javafx.scene.paint.Color
 import javafx.scene.paint.Paint
 import javafx.util.Callback
 import tornadofx.*
 import tornadofx.Stylesheet.Companion.listView
+import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -35,10 +43,10 @@ import java.nio.file.Paths
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-class ArchiveList : Fragment() {
-    val archives = mutableListOf<Archive>().observable()
+class ArchiveList @JvmOverloads constructor(val archives: ObservableList<Archive> = mutableListOf<Archive>().observable()) : Fragment() {
+    private var nameLabel: Label by singleAssign()
+    private var listView: ListView<Archive> by singleAssign()
 
-    var nameLabel: Label by singleAssign()
     var name = "Archives"
         get() = field
         set(value) {
@@ -54,7 +62,7 @@ class ArchiveList : Fragment() {
         }
 
         center {
-            listview(archives) {
+            listView = listview(archives) {
                 cellCache { archive ->
                     borderpane {
                         top {
@@ -91,7 +99,38 @@ class ArchiveList : Fragment() {
                         }
                     }
                 }
+
+                setOnDragOver { onDragOver(it) }
+                setOnDragDropped { onDragDropped(it) }
             }
         }
+    }
+
+
+    private fun onDragOver(e: DragEvent) {
+        if (e.gestureSource != listView && e.dragboard.hasFiles()) {
+            e.acceptTransferModes(TransferMode.MOVE)
+        }
+        e.consume()
+    }
+
+    private fun onDragDropped(e: DragEvent) {
+        if (e.gestureSource != listView) {
+            val db = e.dragboard
+            if (db.hasFiles()) {
+                for (source in db.files.map(File::toPath)) {
+                    if (source.exists()) {
+                        val name = source.fileName.toString()
+                        val target = FileLocations.archivesFolder.resolve(name)
+                        Files.move(source, target)
+                        archives.add(Archive.create(target))
+                    }
+                }
+                e.isDropCompleted = true
+            } else {
+                e.isDropCompleted = false
+            }
+        }
+        e.consume()
     }
 }

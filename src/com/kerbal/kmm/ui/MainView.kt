@@ -1,5 +1,6 @@
 package com.kerbal.kmm.ui
 
+import com.kerbal.kmm.KerbalModManager
 import com.kerbal.kmm.Settings
 import com.kerbal.kmm.io.Archive
 import com.kerbal.kmm.io.ZipArchive
@@ -36,7 +37,7 @@ import kotlin.concurrent.thread
 class MainView : View() {
     var sourceControl: FileControl by singleAssign()
     var targetControl: DirectoryControl by singleAssign()
-    val archiveList = ArchiveList()
+    val archiveList = ArchiveList(KerbalModManager.archives)
 
     override val root = borderpane {
         padding = Insets(Settings.UI_SPACING)
@@ -59,20 +60,30 @@ class MainView : View() {
             }
         }
 
-        this.center = archiveList.apply {
-            val folder = System.getenv("HOME").toPath().resolve("Downloads")
+        left {
+            borderpane {
+                this.center = archiveList.apply {
+                    //                        val folder = System.getenv("HOME").toPath().resolve("Downloads")
+//
+//                        name = "Archives in \"$folder\""
+//
+//                        folder.directoryStream()
+//                                .filter { Archive.isSupported(it) }
+//                                .map { Archive.create(it) }
+//                                .forEach { archives.add(it) }
+                }.root
+            }
+        }
 
-            name = "Archives in \"$folder\""
+        center {
 
-            folder.directoryStream()
-                    .filter { Archive.isSupported(it) }
-                    .map { Archive.create(it) }
-                    .forEach { archives.add(it) }
-        }.root
+        }
 
 
         bottom {
             hbox {
+                padding = insets(top = Settings.UI_SPACING)
+
                 alignment = Pos.CENTER_RIGHT
                 spacing = Settings.UI_SPACING
 
